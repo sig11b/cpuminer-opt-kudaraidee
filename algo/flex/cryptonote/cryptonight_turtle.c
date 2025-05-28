@@ -48,7 +48,7 @@
   if (variant == 1 && len < 43) \
   { \
     fprintf(stderr, "Cryptonight variant 1 needs at least 43 bytes of data"); \
-    _exit(1); \
+    _Exit(1); \
   } \
   const uint64_t tweak1_2 = (variant == 1) ? *(const uint64_t*)(((const uint8_t*)input)+35) ^ ctx->state.hs.w[24] : 0
 

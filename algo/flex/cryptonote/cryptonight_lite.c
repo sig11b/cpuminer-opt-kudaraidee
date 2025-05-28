@@ -48,7 +48,7 @@
   if (variant == 1 && len < 43) \
   { \
     fprintf(stderr, "Cryptonight variant 1 needs at least 43 bytes of data"); \
-    _exit(1); \
+    _Exit(1); \
   } \
   const uint64_t tweak1_2 = (variant == 1) ? *(const uint64_t*)(((const uint8_t*)input)+35) ^ ctx->state.hs.w[24] : 0
 
@@ -198,10 +198,14 @@ struct cryptonightlite_ctx {
 };
 
 void cryptonightlite_hash(const char* input, char* output, uint32_t len, int variant) {
+#ifdef __clang__
+    struct cryptonightlite_ctx *ctx = malloc(sizeof(struct cryptonightlite_ctx));
+#else
 #if defined(_MSC_VER)
     struct cryptonightlite_ctx *ctx = _malloca(sizeof(struct cryptonightlite_ctx));
 #else
     struct cryptonightlite_ctx *ctx = alloca(sizeof(struct cryptonightlite_ctx));
+#endif
 #endif
     hash_process(&ctx->state.hs, (const uint8_t*) input, len);
     memcpy(ctx->text, ctx->state.init, INIT_SIZE_BYTE);
@@ -284,7 +288,11 @@ void cryptonightlite_hash(const char* input, char* output, uint32_t len, int var
     hash_permutation(&ctx->state.hs);
     /*memcpy(hash, &state, 32);*/
     extra_hashes[ctx->state.hs.b[0] & 2](&ctx->state, 200, output);
+#ifdef __clang__
+    free(ctx);
+#else
     oaes_free((OAES_CTX **) &ctx->aes_ctx);
+#endif
 }
 
 void cryptonightlite_fast_hash(const char* input, char* output, uint32_t len) {
